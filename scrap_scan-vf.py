@@ -1,9 +1,13 @@
 import requests
+import sys
 import shutil
 import os
 
-# Chap debut - 1
-y = 245
+
+if(len(sys.argv) > 1):
+    y = sys.argv[1]
+else:
+    y = 0
 
 # Changer nom manga
 # os.mkdir("./One_Piece")
