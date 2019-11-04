@@ -7,7 +7,10 @@ scrap = True
 
 # cheching for arguments
 if(len(sys.argv) > 1):
-    chapNumber = int(sys.argv[1]) - 1
+    if(int(sys.argv[1]) > 0):
+        chapNumber = int(sys.argv[1]) - 1
+    else:
+        chapNumber = 0
 else:
     chapNumber = 0
 
@@ -15,75 +18,76 @@ else:
 folderName = "One_Piece"
 scanVF_URL = "https://www.scan-vf.co/uploads/manga/one_piece/chapters/"
 
-if(chapNumber == 0):
-    try:
-        os.mkdir("./" + folderName)
-    except:
-        print("File already exist")
-        scrap = False
+
+try:
+    os.mkdir("./" + folderName)
+except:
+    print("Warning: File {} already exist".format(folderName))
 
 
-while(scrap):
+try:
+    while(scrap):
+        pageNumber = 0
+        chapNumber += 1
 
-    pageNumber = 0
-    chapNumber += 1
+        path = "./{}/Chap_{}".format(folderName, chapNumber)
 
-    path = "./{}/Chap_{}".format(folderName, chapNumber)
+        try:
+            os.mkdir(path)
+        except FileExistsError:
+            print("Error: File {} already exist".format(path))
+            break
 
-    os.mkdir(path)
+        # URL image test (nombre chapitre total)
+        test_fin = "{}chapitre-{}/01.jpg".format(scanVF_URL, chapNumber)
 
-    # URL image test (nombre chapitre total)
-    test_fin = "https://www.scan-vf.co/uploads/manga/one_piece/chapters/chapitre-" + \
-        str(chapNumber) + "/01.jpg"
-
-    resp = requests.get(test_fin, stream=True)
-
-    if(resp.status_code != 200):
-        test_fin = "https://www.scan-vf.co/uploads/manga/one_piece/chapters/chapitre-" + \
-            str(chapNumber) + "/01.png"
         resp = requests.get(test_fin, stream=True)
+
         if(resp.status_code != 200):
-            test_fin = "https://www.scan-vf.co/uploads/manga/one_piece/chapters/" + \
-                str(chapNumber) + "/01.jpg"
+            test_fin = "{}chapitre-{}/01.png".format(scanVF_URL, chapNumber)
             resp = requests.get(test_fin, stream=True)
             if(resp.status_code != 200):
-                break
+                test_fin = "{}{}/01.jpg".format(scanVF_URL, chapNumber)
+                resp = requests.get(test_fin, stream=True)
+                if(resp.status_code != 200):
+                    break
 
-    while (True):
+        while (True):
 
-        isjpg = True
-        pageNumber += 1
+            isjpg = True
+            pageNumber += 1
 
-        # This is the image url.
-        image_url = "{}chapitre-{}/{:02d}.jpg".format(
-            scanVF_URL, chapNumber, pageNumber)
-
-        # Test de la request avec .jpg
-        resp = requests.get(image_url, stream=True)
-        if(resp.status_code != 200):
-            isjpg = False
-            image_url = "{}chapitre-{}/{:02d}.png".format(
+            # This is the image url.
+            image_url = "{}chapitre-{}/{:02d}.jpg".format(
                 scanVF_URL, chapNumber, pageNumber)
 
-            # Test de la request avec .png
+            # Test de la request avec .jpg
             resp = requests.get(image_url, stream=True)
             if(resp.status_code != 200):
-                isjpg = True
-                image_url = "{}{}/{:02d}.jpg".format(
+                isjpg = False
+                image_url = "{}chapitre-{}/{:02d}.png".format(
                     scanVF_URL, chapNumber, pageNumber)
 
-                # Test de la request avec url differente connue TODO: ajouter les autres type d'URL
+                # Test de la request avec .png
                 resp = requests.get(image_url, stream=True)
                 if(resp.status_code != 200):
-                    break  # Page introuvable chapitre suivant
+                    isjpg = True
+                    image_url = "{}{}/{:02d}.jpg".format(
+                        scanVF_URL, chapNumber, pageNumber)
 
-        # Open a local file with wb ( write binary ) permission.
-        name = path + \
-            "/{}_{:02d}.{}".format(chapNumber, pageNumber,
-                                   "jpg" if isjpg else "png")
+                    # Test de la request avec url differente connue TODO: ajouter les autres type d'URL
+                    resp = requests.get(image_url, stream=True)
+                    if(resp.status_code != 200):
+                        break  # Page introuvable chapitre suivant
 
-        local_file = open(name, 'wb')
-        resp.raw.decode_content = True
-        shutil.copyfileobj(resp.raw, local_file)
+            # Open a local file with wb ( write binary ) permission.
+            name = path + "/{}_{:02d}.{}".format(chapNumber, pageNumber, "jpg" if isjpg else "png")
 
-        del resp
+            local_file = open(name, 'wb')
+            resp.raw.decode_content = True
+            shutil.copyfileobj(resp.raw, local_file)
+
+            del resp
+
+except KeyboardInterrupt:
+    pass
