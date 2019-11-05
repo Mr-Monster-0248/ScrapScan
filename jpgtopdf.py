@@ -1,4 +1,6 @@
 from PIL import Image
+import sys
+import os
 
 
 # cheching for arguments
@@ -8,7 +10,12 @@ if(len(sys.argv) > 1):
     else:
         chapNumber = 0
 else:
-    chapNumber = 0
+    chapNumber = 435
+
+try:
+    os.mkdir("./pdf")
+except:
+    print("Warning: File ./pdf already exist")
 
 while(True):
 
@@ -16,6 +23,7 @@ while(True):
     name = "./One_Piece/Chap_{}/{}_01.jpg".format(chapNumber, chapNumber)
 
     title = "One Piece Chapitre {}".format(chapNumber)
+    saveAs = "./pdf/One_Piece_Chap_{}.pdf".format(chapNumber)
 
 
     try:
@@ -37,4 +45,7 @@ while(True):
             break
 
     
-    imagesArray[0].save("test.pdf", save_all=True, append_images=imagesArray[1:], author="Eiichiro Oda", title=title)
+    imagesArray[0].save(saveAs, save_all=True, append_images=imagesArray[1:], author="Eiichiro Oda", title=title)
+
+    for i in range(len(imagesArray)):
+        imagesArray[i].close()
