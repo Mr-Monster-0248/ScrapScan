@@ -94,9 +94,9 @@ try:
             
             resp.raw.decode_content = True
 
-            if(isjpg = True):
+            if(isjpg):
                 im = Image.open(resp.raw)
-                rgb_im.save(name)
+                im.save(name)
             else:
                 im = Image.open(resp.raw)
                 rgb_im = im.convert('RGB')
