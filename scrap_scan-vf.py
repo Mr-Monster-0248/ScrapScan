@@ -54,7 +54,10 @@ try:
                     test_fin = "{}chapitre-{}/01.JPG".format(scanVF_URL, chapNumber)
                     resp = requests.get(test_fin, stream=True)
                     if(resp.status_code != 200):
-                        break
+                        test_fin = "{}chapitre-{}/01.jpeg".format(scanVF_URL, chapNumber)
+                        resp = requests.get(test_fin, stream=True)
+                        if(resp.status_code != 200):
+                            break
 
         while (True):
 
@@ -88,7 +91,13 @@ try:
                         # Test de la request avec url differente(JPG MAJ) connue TODO: ajouter les autres type d'URL
                         resp = requests.get(image_url, stream=True)
                         if(resp.status_code != 200):
-                            break  # Page introuvable chapitre suivant
+                            image_url = "{}chapitre-{}/{:02d}.jpeg".format(
+                            scanVF_URL, chapNumber, pageNumber)
+
+                            # Test de la request avec url differente(JPG MAJ) connue TODO: ajouter les autres type d'URL
+                            resp = requests.get(image_url, stream=True)
+                            if(resp.status_code != 200):
+                                break  # Page introuvable chapitre suivant
 
             # Open a local file with wb ( write binary ) permission.
             name = path + "/{}_{:02d}.jpg".format(chapNumber, pageNumber)
@@ -96,11 +105,15 @@ try:
             
             resp.raw.decode_content = True
 
+            im = Image.open(resp.raw) 
+
             if(isjpg):
-                im = Image.open(resp.raw)
-                im.save(name)
+                try:
+                    im.save(name)
+                except:
+                    rgb_im = im.convert('RGB')
+                    rgb_im.save(name)
             else:
-                im = Image.open(resp.raw)
                 rgb_im = im.convert('RGB')
                 rgb_im.save(name)
 
