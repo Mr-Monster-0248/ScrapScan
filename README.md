@@ -6,7 +6,6 @@ python script to scrap scan online
 - pillow
 - cfscrape (Only for japscan)
     - NodeJS
-- fpdf (Only to transform images to pdf by chapters)
 
 ## Sources we handle
 - `https://www.scan-vf.co/`

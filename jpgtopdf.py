@@ -1,37 +1,40 @@
-from fpdf import FPDF
+from PIL import Image
 
-chap = 0
+
+# cheching for arguments
+if(len(sys.argv) > 1):
+    if(int(sys.argv[1]) > 0):
+        chapNumber = int(sys.argv[1]) - 1
+    else:
+        chapNumber = 0
+else:
+    chapNumber = 0
 
 while(True):
 
-    chap = chap + 1
-    name = "./testpdf/Chap_" + str(chap) + "/" + str(chap) + "_01.jpg"
+    chapNumber = chapNumber + 1
+    name = "./One_Piece/Chap_{}/{}_01.jpg".format(chapNumber, chapNumber)
+
+    title = "One Piece Chapitre {}".format(chapNumber)
+
 
     try:
         local_file = open(name, 'r')
     except:
         break
 
-    page = 0
-
-    pdf = FPDF()
+    pageNumber = 0
+    imagesArray = []
 
     while(True):
-        page = page + 1
-        
-        if (page < 10):
-            name = "./testpdf/Chap_" + str(chap) + "/" + str(chap) + "_0" + str(page) + ".jpg"
-        else:
-            name = "./testpdf/Chap_" + str(chap) + "/" + str(chap) + "_" + str(page) + ".jpg"
+
+        pageNumber += 1
+        name = "./One_Piece/Chap_{}/{}_{:02d}.jpg".format(chapNumber, chapNumber, pageNumber)
 
         try:
-            local_file = open(name, 'r')
+            imagesArray.append(Image.open(name))
         except:
             break
 
-        pdf.add_page()
-        pdf.image(name,0,0,210,297)
     
-    outputname = "./testpdf/One_Piece_Chap_" + str(chap) + ".pdf"
-    pdf.output(outputname, "F")
-
+    imagesArray[0].save("test.pdf", save_all=True, append_images=imagesArray[1:], author="Eiichiro Oda", title=title)
