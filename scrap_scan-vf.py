@@ -115,6 +115,7 @@ try:
         isChapter, correctURL, extentionType = findScanURL(scanVF_URL, chapNumber, 1)
 
         if(not isChapter):
+            print("Exit searching for chapter", chapNumber)
             break
         
 
@@ -129,6 +130,7 @@ try:
                 image_url = correctURL.format(chapNumber, pageNumber, extentionType)
                 resp = requests.get(image_url, stream=True)
                 if(resp.status_code != 200):
+                    print("Finish chapter", chapNumber)
                     break
 
 
