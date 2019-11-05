@@ -1,31 +1,45 @@
 import requests
 import shutil
 
-myURL = "https://www.scan-vf.co/"
+def searchScan(myURL) -> (str, str):
+    """
+    Fuction that search for scan acording to an input by the user
 
-search = input("Scan to find: ")
-searchURL = myURL + "search?query=" + search
-print("quering", searchURL)
-resp = requests.get(searchURL)
+    -----
+    Return tables of choices names and choices url code
+    """
+    search = input("Scan to find: ")
+    searchURL = myURL + "search?query=" + search
+    print("quering", searchURL)
+    resp = requests.get(searchURL)
 
-if(resp.status_code == 200):
-    data = resp.json()
-    #print(data)
-    for item in data:
-        for i in data[item]:
-            print(i['value'])
-            
+    choiceURL = []
+    choiceName = []
+    if(resp.status_code == 200):
+        data = resp.json()
+        for item in data:
+            for i in data[item]:
+                choiceName.append(i['value'])
+                choiceURL.append(i['data'])
+    else:
+        print("Error request:" , resp.status_code)
 
-else:
-    print("Error request:" , resp.status_code)
+    del resp
+    return choiceName, choiceURL
 
+def userChoice(choiceName):
+    print("Choose the manga you want in this list")
+    for i in range(len(choiceName)):
+        print(i, "->", choiceName[i])
+    
+    choice = -1
+    while(choice < 0 or choice > len(choiceName)):
+        choice = int(input("Your choice:"))
 
+    return choice
 
-# if(resp.status_code == 200):
-#     local_file = open('test.jpg', 'wb')
-#     resp.raw.decode_content = True
-#     shutil.copyfileobj(resp.raw, local_file)
-# else:
-#     print("Error request:" , resp.status_code)
+if __name__ == "__main__":
+    myURL = "https://www.scan-vf.co/"
 
-del resp
+    choiceName, choiceURL = searchScan(myURL)
+    userChoice(choiceName)
