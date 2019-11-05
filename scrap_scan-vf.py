@@ -2,6 +2,7 @@ import requests
 import sys
 import shutil
 import os
+from PIL import Image
 
 scrap = True
 
@@ -75,17 +76,31 @@ try:
                     image_url = "{}{}/{:02d}.jpg".format(
                         scanVF_URL, chapNumber, pageNumber)
 
-                    # Test de la request avec url differente connue TODO: ajouter les autres type d'URL
+                    # Test de la request avec url differente(sans Chapitre-) connue
                     resp = requests.get(image_url, stream=True)
                     if(resp.status_code != 200):
-                        break  # Page introuvable chapitre suivant
+                        isjpg = True
+                        image_url = "{}chapitre-{}/{:02d}.JPG".format(
+                            scanVF_URL, chapNumber, pageNumber)
+
+                        # Test de la request avec url differente(JPG MAJ) connue TODO: ajouter les autres type d'URL
+                        resp = requests.get(image_url, stream=True)
+                        if(resp.status_code != 200):
+                            break  # Page introuvable chapitre suivant
 
             # Open a local file with wb ( write binary ) permission.
-            name = path + "/{}_{:02d}.{}".format(chapNumber, pageNumber, "jpg" if isjpg else "png")
+            name = path + "/{}_{:02d}.jpg".format(chapNumber, pageNumber)
 
-            local_file = open(name, 'wb')
+            
             resp.raw.decode_content = True
-            shutil.copyfileobj(resp.raw, local_file)
+
+            if(isjpg = True):
+                im = Image.open(resp.raw)
+                rgb_im.save(name)
+            else:
+                im = Image.open(resp.raw)
+                rgb_im = im.convert('RGB')
+                rgb_im.save(name)
 
             del resp
 
