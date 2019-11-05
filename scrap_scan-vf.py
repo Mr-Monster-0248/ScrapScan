@@ -51,7 +51,10 @@ try:
                 test_fin = "{}{}/01.jpg".format(scanVF_URL, chapNumber)
                 resp = requests.get(test_fin, stream=True)
                 if(resp.status_code != 200):
-                    break
+                    test_fin = "{}chapitre-{}/01.JPG".format(scanVF_URL, chapNumber)
+                    resp = requests.get(test_fin, stream=True)
+                    if(resp.status_code != 200):
+                        break
 
         while (True):
 
@@ -79,7 +82,6 @@ try:
                     # Test de la request avec url differente(sans Chapitre-) connue
                     resp = requests.get(image_url, stream=True)
                     if(resp.status_code != 200):
-                        isjpg = True
                         image_url = "{}chapitre-{}/{:02d}.JPG".format(
                             scanVF_URL, chapNumber, pageNumber)
 
