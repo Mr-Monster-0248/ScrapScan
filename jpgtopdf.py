@@ -10,7 +10,7 @@ if(len(sys.argv) > 1):
     else:
         chapNumber = 0
 else:
-    chapNumber = 435
+    chapNumber = 0
 
 try:
     os.mkdir("./pdf")
