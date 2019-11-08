@@ -7,6 +7,7 @@ Every libraries can be installed with a `pip install [library]` command
 - pillow
 - cfscrape (Only for japscan)
     - NodeJS
+- termcolor
 
 ## Sources we handle
 - `https://www.scan-vf.co/`

@@ -3,6 +3,7 @@ import sys
 import shutil
 import os
 from PIL import Image
+from termcolor import colored
 
 
 def findExtention(URLpreformated: str, chapNumber: int, pageNumber: int) -> str:
@@ -90,7 +91,7 @@ def scrapScan_vf(folderName, scanVF_URL, chapNumber = 0):
     try:
         os.mkdir("./" + folderName)
     except:
-        print("Warning: File {} already exist".format(folderName))
+        print(colored("Warning:", "yellow"), "File {} already exist".format(folderName))
 
     failedAttempt = 0
     pageNumber = 0
@@ -115,12 +116,14 @@ def scrapScan_vf(folderName, scanVF_URL, chapNumber = 0):
                     break
             else:
                 path = "./{}/Chap_{}".format(folderName, chapNumber)
+                
 
-                try:
+                if(os.path.isdir(path)):
+                    print(colored("Warning:", "yellow"), path, "will be override")
+                    shutil.rmtree(path)
                     os.mkdir(path)
-                except FileExistsError:
-                    print("Error: File {} already exist".format(path))
-                    break
+                else:
+                    os.mkdir(path)
             
 
                 while (True):
@@ -140,12 +143,13 @@ def scrapScan_vf(folderName, scanVF_URL, chapNumber = 0):
                                 chapNumber, pageNumber, extentionType)
                             resp = requests.get(image_url, stream=True)
                             if(not isChapter):
-                                print("Error at chapter", chapNumber, "at page", pageNumber)
+                                print(colored("Error:", "red"), "at chapter",
+                                      chapNumber, "at page", pageNumber)
                                 failedAttempt += 1
                                 
                     
                     if(failedAttempt > 2):
-                        print("Error chapter", chapNumber,"at page", pageNumber)
+                        print(colored("Error: ", "red"), "chapter", chapNumber, "at page", pageNumber)
                         failedAttempt = 0
                         pageNumber = 0
                         break
