@@ -68,10 +68,20 @@ def findScanURL(scanVF_URL: str, chapNumber: int, pageNumber: int) -> (bool, str
         extentionTyoe = findExtention(preformatedURL, chapNumber, pageNumber)
         if(extentionTyoe == "none"):
             #third known URL type
-            preformatedURL = scanVF_URL + "chapitre-{}/%20({}).{}"
+            preformatedURL = scanVF_URL + "chapitre-{}/%20({:02}).{}"
             extentionTyoe = findExtention(preformatedURL, chapNumber, pageNumber)
             if(extentionTyoe == "none"):
-                return False, preformatedURL, extentionTyoe
+                #forth known URL type
+                preformatedURL = scanVF_URL + "chapitre-{}/{:02}_" + "{:02}".format(pageNumber+1) + ".{}"
+                extentionTyoe = findExtention(preformatedURL, chapNumber, pageNumber)
+                if(extentionTyoe == "none"):
+                    #forth known URL type
+                    preformatedURL = scanVF_URL + "chapitre-{}/{:02}-" + \
+                        "{:02}".format(pageNumber+1) + ".{}"
+                    extentionTyoe = findExtention(
+                        preformatedURL, chapNumber, pageNumber)
+                    if(extentionTyoe == "none"):
+                        return False, preformatedURL, extentionTyoe
 
     return True, preformatedURL, extentionTyoe
 
@@ -82,65 +92,86 @@ def scrapScan_vf(folderName, scanVF_URL, chapNumber = 0):
     except:
         print("Warning: File {} already exist".format(folderName))
 
+    failedAttempt = 0
+    pageNumber = 0
 
     try:
         while(True):
-            pageNumber = 0
             chapNumber += 1
             extentionType = "jpg"
 
-            path = "./{}/Chap_{}".format(folderName, chapNumber)
-
-            try:
-                os.mkdir(path)
-            except FileExistsError:
-                print("Error: File {} already exist".format(path))
-                break
-
             
+            print("testing for chapter", chapNumber, "and page", pageNumber)
             # Checking if the chapter exist according to all the known URLs
-            isChapter, correctURL, extentionType = findScanURL(scanVF_URL, chapNumber, 1)
+            isChapter, correctURL, extentionType = findScanURL(scanVF_URL, chapNumber, pageNumber)
 
             if(not isChapter):
-                print("Exit searching for chapter", chapNumber)
-                break
+                failedAttempt += 1
+                print("Failled reaching for chapter", chapNumber, "attempt:", failedAttempt)
+                chapNumber -= 1
+                pageNumber += 1
+                if(failedAttempt > 3):
+                    print("Could not find chapter", chapNumber, "Exiting...")
+                    break
+            else:
+                path = "./{}/Chap_{}".format(folderName, chapNumber)
+
+                try:
+                    os.mkdir(path)
+                except FileExistsError:
+                    print("Error: File {} already exist".format(path))
+                    break
             
 
-            while (True):
-                pageNumber += 1
+                while (True):
+                    pageNumber += 1
 
-                # This is the image url.
-                image_url = correctURL.format(chapNumber, pageNumber, extentionType)
-                resp = requests.get(image_url, stream=True)
-                if(resp.status_code != 200):
-                    extentionType = findExtention(correctURL, chapNumber, pageNumber)
+                    # This is the image url.
                     image_url = correctURL.format(chapNumber, pageNumber, extentionType)
                     resp = requests.get(image_url, stream=True)
-                    if(resp.status_code != 200):
-                        print("Finish chapter", chapNumber)
+                    if(resp.status_code != 200): # extention type might have change during page scraping
+                        extentionType = findExtention(correctURL, chapNumber, pageNumber)
+                        image_url = correctURL.format(chapNumber, pageNumber, extentionType)
+                        resp = requests.get(image_url, stream=True)
+                        if(resp.status_code != 200):# url might have change during page scraping (very unlikely)
+                            isChapter, correctURL, extentionType = findScanURL(
+                                scanVF_URL, chapNumber, pageNumber)
+                            image_url = correctURL.format(
+                                chapNumber, pageNumber, extentionType)
+                            resp = requests.get(image_url, stream=True)
+                            if(not isChapter):
+                                print("Error at chapter", chapNumber, "at page", pageNumber)
+                                failedAttempt += 1
+                                
+                    
+                    if(failedAttempt > 2):
+                        print("Error chapter", chapNumber,"at page", pageNumber)
+                        failedAttempt = 0
+                        pageNumber = 0
                         break
 
+                    if(isChapter):
+                        failedAttempt = 0
+                    
+                        # Open a local file with wb ( write binary ) permission.
+                        name = path + "/{}_{:02d}.jpg".format(chapNumber, pageNumber)
 
-                
-                # Open a local file with wb ( write binary ) permission.
-                name = path + "/{}_{:02d}.jpg".format(chapNumber, pageNumber)
+                        
+                        resp.raw.decode_content = True
 
-                
-                resp.raw.decode_content = True
+                        im = Image.open(resp.raw) 
 
-                im = Image.open(resp.raw) 
+                        if(extentionType == "jpg"):
+                            try:
+                                im.save(name)
+                            except:
+                                rgb_im = im.convert('RGB')
+                                rgb_im.save(name)
+                        else:
+                            rgb_im = im.convert('RGB')
+                            rgb_im.save(name)
 
-                if(extentionType == "jpg"):
-                    try:
-                        im.save(name)
-                    except:
-                        rgb_im = im.convert('RGB')
-                        rgb_im.save(name)
-                else:
-                    rgb_im = im.convert('RGB')
-                    rgb_im.save(name)
-
-                del resp
+                    del resp
 
     except KeyboardInterrupt:
         pass

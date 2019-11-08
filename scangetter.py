@@ -34,7 +34,7 @@ def userChoice(choiceName):
     
     choice = -1
     while(choice < 0 or choice > len(choiceName)):
-        choice = int(input("Your choice:"))
+        choice = int(input("Your choice: "))
 
     return choice
 

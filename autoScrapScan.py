@@ -14,7 +14,7 @@ scanVF_URL =  preformatURL.format(choiceURL[choice])
 print("Scraping for", folderName)
 
 try:
-    chapNumber = int(input("Chapter to start(0 default): "))
+    chapNumber = int(input("Chapter to start(0 default): ")) -1
 except:
     chapNumber = 0
 
