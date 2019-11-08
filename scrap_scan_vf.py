@@ -102,17 +102,17 @@ def scrapScan_vf(folderName, scanVF_URL, chapNumber = 0):
             extentionType = "jpg"
 
             
-            print("testing for chapter", chapNumber, "and page", pageNumber)
+            #DEBUG: print("testing for chapter", chapNumber, "and page", pageNumber)
             # Checking if the chapter exist according to all the known URLs
             isChapter, correctURL, extentionType = findScanURL(scanVF_URL, chapNumber, pageNumber)
 
             if(not isChapter):
                 failedAttempt += 1
-                print("Failled reaching for chapter", chapNumber, "attempt:", failedAttempt)
+                #DEBUG: print("Failled reaching for chapter", chapNumber, "attempt:", failedAttempt)
                 chapNumber -= 1
                 pageNumber += 1
                 if(failedAttempt > 3):
-                    print("Could not find chapter", chapNumber, "Exiting...")
+                    print(colored("Error:", "red"), "Could not find chapter", chapNumber, "Exiting...")
                     break
             else:
                 path = "./{}/Chap_{}".format(folderName, chapNumber)
@@ -127,7 +127,6 @@ def scrapScan_vf(folderName, scanVF_URL, chapNumber = 0):
             
 
                 while (True):
-                    pageNumber += 1
 
                     # This is the image url.
                     image_url = correctURL.format(chapNumber, pageNumber, extentionType)
@@ -143,13 +142,14 @@ def scrapScan_vf(folderName, scanVF_URL, chapNumber = 0):
                                 chapNumber, pageNumber, extentionType)
                             resp = requests.get(image_url, stream=True)
                             if(not isChapter):
-                                print(colored("Error:", "red"), "at chapter",
-                                      chapNumber, "at page", pageNumber)
+                                #DEBUG: print(colored("Error:", "red"), "at chapter",  chapNumber, "at page", pageNumber)
                                 failedAttempt += 1
+                                pageNumber += 1
                                 
                     
-                    if(failedAttempt > 2):
-                        print(colored("Error: ", "red"), "chapter", chapNumber, "at page", pageNumber)
+                    if(failedAttempt > 1):
+                        output = "Finished chapter: {}".format(chapNumber)
+                        print(colored(output, "green"))
                         failedAttempt = 0
                         pageNumber = 0
                         break
@@ -160,7 +160,7 @@ def scrapScan_vf(folderName, scanVF_URL, chapNumber = 0):
                         # Open a local file with wb ( write binary ) permission.
                         name = path + "/{}_{:02d}.jpg".format(chapNumber, pageNumber)
 
-                        
+                        pageNumber += 1
                         resp.raw.decode_content = True
 
                         im = Image.open(resp.raw) 
