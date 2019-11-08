@@ -1,5 +1,6 @@
 import scrap_scan_vf as ssvf
 import scangetter
+import jpgtopdf as toPDF
 
 # the only url working for now
 myURL = "https://www.scan-vf.co/"
@@ -20,4 +21,9 @@ except:
 
 print("Stop with ctrl+c")
 ssvf.scrapScan_vf(folderName, scanVF_URL, chapNumber)
+
+choice = input("Do you want to transform your chapters into pdf ? [y/n] (default n): ")
+if(choice == 'y' or choice == 'Y'):
+    author = input("Enter the autor to save (default none): ")
+    toPDF.toPDF(folderName, chapNumber, author)
 
