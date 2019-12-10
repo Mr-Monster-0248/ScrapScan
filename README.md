@@ -1,4 +1,14 @@
+## Disclamer
+**DO NOT USE**
+
+This project only purpose was to challenge our selves, Using it goes against the property laws
+
+**We are not responsible** for any use of those scripts
+
+--------------
+
 # ScrapScan
+
 Python script to scrap scan online and to change it to pdf
 
 ## Requierd libraries
