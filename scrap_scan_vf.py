@@ -23,25 +23,25 @@ def findExtention(URLpreformated: str, chapNumber: int, pageNumber: int) -> str:
     extentionType = "jpg"
     testURL = URLpreformated.format(chapNumber, pageNumber, extentionType)
     resp = requests.get(testURL)
-    if(resp.status_code == 200):
+    if resp.status_code == 200:
         return extentionType
     else:
         extentionType = "png"
         testURL = URLpreformated.format(chapNumber, pageNumber, extentionType)
         resp = requests.get(testURL)
-        if(resp.status_code == 200):
+        if resp.status_code == 200:
             return extentionType
         else:
             extentionType = "JPG"
             testURL = URLpreformated.format(chapNumber, pageNumber, extentionType)
             resp = requests.get(testURL)
-            if(resp.status_code == 200):
+            if resp.status_code == 200:
                 return extentionType
             else:
                 extentionType = "jpeg"
                 testURL = URLpreformated.format(chapNumber, pageNumber, extentionType)
                 resp = requests.get(testURL)
-                if(resp.status_code == 200):
+                if resp.status_code == 200:
                     return extentionType
                 else:
                     return "none"
@@ -60,34 +60,34 @@ def findScanURL(scanVF_URL: str, chapNumber: int, pageNumber: int) -> (bool, str
     - final good preformated url
     - extention
     """
-    #First know URL type
+    # First know URL type
     preformatedURL = scanVF_URL + "chapitre-{}/{:02d}.{}"
     extentionTyoe = findExtention(preformatedURL, chapNumber, pageNumber)
-    if(extentionTyoe == "none"):
-        #second known URL type
+    if extentionTyoe == "none":
+        # second known URL type
         preformatedURL = scanVF_URL + "{}/{:02d}.{}"
         extentionTyoe = findExtention(preformatedURL, chapNumber, pageNumber)
-        if(extentionTyoe == "none"):
-            #third known URL type
+        if extentionTyoe == "none":
+            # third known URL type
             preformatedURL = scanVF_URL + "chapitre-{}/%20({:02}).{}"
             extentionTyoe = findExtention(preformatedURL, chapNumber, pageNumber)
-            if(extentionTyoe == "none"):
-                #forth known URL type
-                preformatedURL = scanVF_URL + "chapitre-{}/{:02}_" + "{:02}".format(pageNumber+1) + ".{}"
+            if extentionTyoe == "none":
+                # forth known URL type
+                preformatedURL = scanVF_URL + "chapitre-{}/{:02}_" + "{:02}".format(pageNumber + 1) + ".{}"
                 extentionTyoe = findExtention(preformatedURL, chapNumber, pageNumber)
-                if(extentionTyoe == "none"):
-                    #forth known URL type
+                if extentionTyoe == "none":
+                    # forth known URL type
                     preformatedURL = scanVF_URL + "chapitre-{}/{:02}-" + \
-                        "{:02}".format(pageNumber+1) + ".{}"
+                                     "{:02}".format(pageNumber + 1) + ".{}"
                     extentionTyoe = findExtention(
                         preformatedURL, chapNumber, pageNumber)
-                    if(extentionTyoe == "none"):
+                    if extentionTyoe == "none":
                         return False, preformatedURL, extentionTyoe
 
     return True, preformatedURL, extentionTyoe
 
 
-def scrapScan_vf(folderName, scanVF_URL, chapNumber = 0):
+def scrapScan_vf(folderName, scanVF_URL, chapNumber=0):
     try:
         os.mkdir("./" + folderName)
     except:
@@ -97,75 +97,71 @@ def scrapScan_vf(folderName, scanVF_URL, chapNumber = 0):
     pageNumber = 0
 
     try:
-        while(True):
+        while True:
             chapNumber += 1
             extentionType = "jpg"
 
-            
-            #DEBUG: print("testing for chapter", chapNumber, "and page", pageNumber)
+            # DEBUG: print("testing for chapter", chapNumber, "and page", pageNumber)
             # Checking if the chapter exist according to all the known URLs
             isChapter, correctURL, extentionType = findScanURL(scanVF_URL, chapNumber, pageNumber)
 
-            if(not isChapter):
+            if not isChapter:
                 failedAttempt += 1
-                #DEBUG: print("Failled reaching for chapter", chapNumber, "attempt:", failedAttempt)
+                # DEBUG: print("Failled reaching for chapter", chapNumber, "attempt:", failedAttempt)
                 chapNumber -= 1
                 pageNumber += 1
-                if(failedAttempt > 3):
+                if (failedAttempt > 3):
                     print(colored("Error:", "red"), "Could not find chapter", chapNumber, "Exiting...")
                     break
             else:
                 path = "./{}/Chap_{}".format(folderName, chapNumber)
-                
 
-                if(os.path.isdir(path)):
+                if os.path.isdir(path):
                     print(colored("Warning:", "yellow"), path, "will be override")
                     shutil.rmtree(path)
                     os.mkdir(path)
                 else:
                     os.mkdir(path)
-            
 
                 while (True):
 
                     # This is the image url.
                     image_url = correctURL.format(chapNumber, pageNumber, extentionType)
                     resp = requests.get(image_url, stream=True)
-                    if(resp.status_code != 200): # extention type might have change during page scraping
+                    if resp.status_code != 200:  # extention type might have change during page scraping
                         extentionType = findExtention(correctURL, chapNumber, pageNumber)
                         image_url = correctURL.format(chapNumber, pageNumber, extentionType)
                         resp = requests.get(image_url, stream=True)
-                        if(resp.status_code != 200):# url might have change during page scraping (very unlikely)
+                        if resp.status_code != 200:  # url might have change during page scraping (very unlikely)
                             isChapter, correctURL, extentionType = findScanURL(
                                 scanVF_URL, chapNumber, pageNumber)
                             image_url = correctURL.format(
                                 chapNumber, pageNumber, extentionType)
                             resp = requests.get(image_url, stream=True)
-                            if(not isChapter):
-                                #DEBUG: print(colored("Error:", "red"), "at chapter",  chapNumber, "at page", pageNumber)
+                            if not isChapter:
+                                # DEBUG: print(colored("Error:", "red"), "at chapter",  chapNumber, "at page", pageNumber)
                                 failedAttempt += 1
                                 pageNumber += 1
-                                
-                    
-                    if(failedAttempt > 1):
+
+                    if failedAttempt > 1:
                         output = "Finished chapter: {}".format(chapNumber)
                         print(colored(output, "green"))
                         failedAttempt = 0
                         pageNumber = 0
                         break
 
-                    if(isChapter):
+                    if isChapter:
                         failedAttempt = 0
-                    
+
                         # Open a local file with wb ( write binary ) permission.
                         name = path + "/{}_{:02d}.jpg".format(chapNumber, pageNumber)
 
                         pageNumber += 1
                         resp.raw.decode_content = True
 
-                        im = Image.open(resp.raw) 
+                        im = Image.open(resp.raw)
 
-                        if(extentionType == "jpg"):
+                        if extentionType == "jpg":
                             try:
                                 im.save(name)
                             except:
@@ -184,8 +180,8 @@ def scrapScan_vf(folderName, scanVF_URL, chapNumber = 0):
 if __name__ == "__main__":
 
     # cheching for arguments
-    if(len(sys.argv) > 1):
-        if(int(sys.argv[1]) >= 0):
+    if len(sys.argv) > 1:
+        if int(sys.argv[1]) >= 0:
             chapNumber = int(sys.argv[1]) - 1
         else:
             chapNumber = 0

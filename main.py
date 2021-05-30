@@ -23,7 +23,7 @@ print("Stop with ctrl+c")
 ssvf.scrapScan_vf(folderName, scanVF_URL, chapNumber)
 
 choice = input("Do you want to transform your chapters into pdf ? [y/n] (default n): ")
-if(choice == 'y' or choice == 'Y'):
+if choice == 'y' or choice == 'Y':
     author = input("Enter the autor to save (default none): ")
     toPDF.toPDF(folderName, chapNumber, author)
 

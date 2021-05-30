@@ -1,7 +1,8 @@
 import requests
 import shutil
 
-def searchScan(myURL) -> (str, str):
+
+def searchScan(my_url) -> (str, str):
     """
     Fuction that search for scan acording to an input by the user
 
@@ -9,34 +10,36 @@ def searchScan(myURL) -> (str, str):
     Return tables of choices names and choices url code
     """
     search = input("Scan to find: ")
-    searchURL = myURL + "search?query=" + search
+    searchURL = my_url + "search?query=" + search
     print("quering", searchURL)
     resp = requests.get(searchURL)
 
-    choiceURL = []
-    choiceName = []
-    if(resp.status_code == 200):
+    choice_url = []
+    choice_name = []
+    if resp.status_code == 200:
         data = resp.json()
         for item in data:
             for i in data[item]:
-                choiceName.append(i['value'])
-                choiceURL.append(i['data'])
+                choice_name.append(i['value'])
+                choice_url.append(i['data'])
     else:
-        print("Error request:" , resp.status_code)
+        print("Error request:", resp.status_code)
 
     del resp
-    return choiceName, choiceURL
+    return choice_name, choice_url
 
-def userChoice(choiceName):
+
+def userChoice(choice_name):
     print("Choose the manga you want in this list")
-    for i in range(len(choiceName)):
-        print(i, "->", choiceName[i])
-    
+    for i in range(len(choice_name)):
+        print(i, "->", choice_name[i])
+
     choice = -1
-    while(choice < 0 or choice > len(choiceName)):
+    while choice < 0 or choice > len(choice_name):
         choice = int(input("Your choice: "))
 
     return choice
+
 
 if __name__ == "__main__":
     myURL = "https://www.scan-vf.co/"

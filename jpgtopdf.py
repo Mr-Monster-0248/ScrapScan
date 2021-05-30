@@ -2,18 +2,18 @@ from PIL import Image
 import sys
 import os
 
-def toPDF(directoryName:str, chapNumber:str, author = ""):
+
+def toPDF(directoryName: str, chapNumber: int, author=""):
     """
     Function to transform chapter into PDFs
     """
-    while(True):
+    while True:
 
         chapNumber += 1
         name = "./{}/Chap_{}/{}_01.jpg".format(directoryName, chapNumber, chapNumber)
 
         title = "{} Chapitre {}".format(directoryName, chapNumber)
         saveAs = "./pdf/{} Chap {}.pdf".format(directoryName, chapNumber)
-
 
         try:
             local_file = open(name, 'r')
@@ -24,7 +24,7 @@ def toPDF(directoryName:str, chapNumber:str, author = ""):
         pageNumber = 0
         imagesArray = []
 
-        while(True):
+        while (True):
 
             pageNumber += 1
             name = "./{}/Chap_{}/{}_{:02d}.jpg".format(directoryName, chapNumber, chapNumber, pageNumber)
@@ -34,7 +34,6 @@ def toPDF(directoryName:str, chapNumber:str, author = ""):
             except:
                 break
 
-        
         imagesArray[0].save(saveAs, save_all=True, append_images=imagesArray[1:], author=author, title=title)
 
         for i in range(len(imagesArray)):
@@ -43,8 +42,8 @@ def toPDF(directoryName:str, chapNumber:str, author = ""):
 
 if __name__ == "__main__":
     # cheching for arguments
-    if(len(sys.argv) > 1):
-        if(int(sys.argv[1]) > 0):
+    if len(sys.argv) > 1:
+        if int(sys.argv[1]) > 0:
             chapNumber = int(sys.argv[1]) - 1
         else:
             chapNumber = 0
